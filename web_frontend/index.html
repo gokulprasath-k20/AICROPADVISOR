@@ -2276,40 +2276,76 @@
 
         // Optimized modal functions for the navigation
         async function loadMarketPricesOptimizedModal() {
+            console.log('💰 Loading market prices...');
             const content = document.getElementById('modal-prices-content');
-            if (!content) return;
             
-            content.innerHTML = `
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                    ${OFFLINE_CROP_DATA.market_prices.map(price => `
-                        <div style="background: linear-gradient(135deg, #E8F5E8, #F1F8E9); padding: 20px; border-radius: 12px; border-left: 5px solid #4CAF50; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                            <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                                <span style="font-size: 2rem; margin-right: 10px;">${cropEmojis[price.crop_name.toLowerCase()] || '🌾'}</span>
-                                <h4 style="color: #2E7D32; margin: 0; font-size: 1.2rem;">${price.crop_name}</h4>
-                            </div>
-                            <div style="text-align: center; margin-bottom: 15px;">
-                                <div style="font-size: 2rem; font-weight: bold; color: #1976D2; margin-bottom: 5px;">₹${price.price_per_kg}/kg</div>
-                                <div style="font-size: 0.9rem; color: #666; background: white; padding: 8px; border-radius: 6px;">
-                                    ${price.market_trend}
+            if (!content) {
+                console.error('❌ modal-prices-content element not found');
+                return;
+            }
+            
+            console.log('📊 Market prices data:', OFFLINE_CROP_DATA.market_prices);
+            
+            if (!OFFLINE_CROP_DATA.market_prices || OFFLINE_CROP_DATA.market_prices.length === 0) {
+                content.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #f44336;">
+                        <h3>❌ Market Data Not Available</h3>
+                        <p>Market prices data is not loaded. Please check the offline data.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            try {
+                content.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                        ${OFFLINE_CROP_DATA.market_prices.map(price => `
+                            <div style="background: linear-gradient(135deg, #E8F5E8, #F1F8E9); padding: 20px; border-radius: 12px; border-left: 5px solid #4CAF50; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                    <span style="font-size: 2rem; margin-right: 10px;">${cropEmojis[price.crop_name.toLowerCase()] || '🌾'}</span>
+                                    <div>
+                                        <h4 style="color: #2E7D32; margin: 0; font-size: 1.2rem;">${price.crop_name}</h4>
+                                        <p style="color: #666; margin: 0; font-size: 0.9rem; font-style: italic;">${price.crop_name_hindi}</p>
+                                    </div>
+                                </div>
+                                <div style="text-align: center; margin-bottom: 15px;">
+                                    <div style="font-size: 2rem; font-weight: bold; color: #1976D2; margin-bottom: 5px;">₹${price.price_per_kg}/kg</div>
+                                    <div style="font-size: 0.9rem; color: #666; background: white; padding: 8px; border-radius: 6px;">
+                                        ${price.market_trend}
+                                    </div>
+                                </div>
+                                <div style="background: rgba(76, 175, 80, 0.1); padding: 10px; border-radius: 6px; text-align: center;">
+                                    <span style="font-size: 0.8rem; color: #2E7D32; font-weight: bold;">
+                                        📊 Status: ${price.market_trend.includes('High') || price.market_trend.includes('rising') || price.market_trend.includes('premium') || price.market_trend.includes('excellent') ? 'Strong Market' : 
+                                                    price.market_trend.includes('Low') || price.market_trend.includes('falling') ? 'Weak Market' : 'Stable Market'}
+                                    </span>
+                                </div>
+                                <div style="text-align: center; margin-top: 10px; font-size: 0.8rem; color: #999;">
+                                    Updated: ${price.last_updated}
                                 </div>
                             </div>
-                            <div style="background: rgba(76, 175, 80, 0.1); padding: 10px; border-radius: 6px; text-align: center;">
-                                <span style="font-size: 0.8rem; color: #2E7D32; font-weight: bold;">
-                                    📊 Market Status: ${price.market_trend.includes('High') ? 'Strong' : price.market_trend.includes('Low') ? 'Weak' : 'Stable'}
-                                </span>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-                <div style="margin-top: 25px; padding: 20px; background: #E3F2FD; border-radius: 10px; text-align: center;">
-                    <p style="color: #1976D2; font-size: 1rem; margin: 0; font-weight: bold;">
-                        📊 Prices updated daily from major markets / कीमतें प्रमुख बाजारों से दैनिक अपडेट होती हैं
-                    </p>
-                    <p style="color: #666; font-size: 0.9rem; margin: 5px 0 0 0; font-style: italic;">
-                        Data sourced from Jharkhand agricultural markets / झारखंड कृषि बाजारों से डेटा प्राप्त
-                    </p>
-                </div>
-            `;
+                        `).join('')}
+                    </div>
+                    <div style="margin-top: 25px; padding: 20px; background: #E3F2FD; border-radius: 10px; text-align: center;">
+                        <p style="color: #1976D2; font-size: 1rem; margin: 0; font-weight: bold;">
+                            📊 Prices updated daily from major markets / कीमतें प्रमुख बाजारों से दैनिक अपडेट होती हैं
+                        </p>
+                        <p style="color: #666; font-size: 0.9rem; margin: 5px 0 0 0; font-style: italic;">
+                            Data sourced from Jharkhand agricultural markets / झारखंड कृषि बाजारों से डेटा प्राप्त
+                        </p>
+                    </div>
+                `;
+                console.log('✅ Market prices loaded successfully');
+            } catch (error) {
+                console.error('❌ Error loading market prices:', error);
+                content.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #f44336;">
+                        <h3>❌ Error Loading Market Prices</h3>
+                        <p>There was an error displaying the market data. Please try again.</p>
+                        <p style="font-size: 0.8rem; color: #999;">Error: ${error.message}</p>
+                    </div>
+                `;
+            }
         }
         
         async function loadInvestmentAnalysisOptimizedModal() {

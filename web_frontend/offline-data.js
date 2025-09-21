@@ -192,6 +192,65 @@ const OFFLINE_CROP_DATA = {
         }
     },
 
+    market_prices: [
+        {
+            crop_name: 'Rice',
+            crop_name_hindi: 'धान',
+            price_per_kg: 25.50,
+            market_trend: 'Stable demand, good prices',
+            last_updated: '2025-01-21'
+        },
+        {
+            crop_name: 'Wheat',
+            crop_name_hindi: 'गेहूं', 
+            price_per_kg: 22.00,
+            market_trend: 'High demand, rising prices',
+            last_updated: '2025-01-21'
+        },
+        {
+            crop_name: 'Maize',
+            crop_name_hindi: 'मक्का',
+            price_per_kg: 18.00,
+            market_trend: 'Moderate demand, stable prices',
+            last_updated: '2025-01-21'
+        },
+        {
+            crop_name: 'Cotton',
+            crop_name_hindi: 'कपास',
+            price_per_kg: 85.00,
+            market_trend: 'High demand, premium prices',
+            last_updated: '2025-01-21'
+        },
+        {
+            crop_name: 'Sugarcane',
+            crop_name_hindi: 'गन्ना',
+            price_per_kg: 3.80,
+            market_trend: 'Steady demand, fair prices',
+            last_updated: '2025-01-21'
+        },
+        {
+            crop_name: 'Chickpea',
+            crop_name_hindi: 'चना',
+            price_per_kg: 65.00,
+            market_trend: 'High demand, good returns',
+            last_updated: '2025-01-21'
+        },
+        {
+            crop_name: 'Kidney Beans',
+            crop_name_hindi: 'राजमा',
+            price_per_kg: 120.00,
+            market_trend: 'Premium crop, excellent prices',
+            last_updated: '2025-01-21'
+        },
+        {
+            crop_name: 'Banana',
+            crop_name_hindi: 'केला',
+            price_per_kg: 15.00,
+            market_trend: 'Consistent demand, stable prices',
+            last_updated: '2025-01-21'
+        }
+    ],
+
     // Simple offline crop recommendation logic - supports decimal inputs
     getCropRecommendation: function(N, P, K, temperature, humidity, ph, rainfall) {
         // Convert all inputs to numbers to ensure decimal support
