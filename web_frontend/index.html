@@ -1060,7 +1060,7 @@
                         </div>
                     `;
                     container.appendChild(pageContent);
-                    loadMarketPricesInModal();
+                    setTimeout(() => loadMarketPricesOptimizedModal(), 100);
                     break;
                     
                 case 'investment':
@@ -1069,7 +1069,7 @@
                         <p style="margin-bottom: 20px; color: #666;">Detailed cost breakdown and profit analysis / विस्तृत लागत विवरण और लाभ विश्लेषण</p>
                         <div style="margin: 20px 0;">
                             <label style="display: block; margin-bottom: 8px; font-weight: bold;">Select Crop / फसल चुनें:</label>
-                            <select id="modal-crop-select" onchange="loadInvestmentAnalysisInModal()" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #E8F5E8; font-size: 16px;">
+                            <select id="modal-crop-select" onchange="loadInvestmentAnalysisOptimizedModal()" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #E8F5E8; font-size: 16px;">
                                 <option value="rice">Rice / धान</option>
                                 <option value="wheat">Wheat / गेहूं</option>
                                 <option value="maize">Maize / मक्का</option>
@@ -1082,14 +1082,14 @@
                         </div>
                         <div style="margin: 20px 0;">
                             <label style="display: block; margin-bottom: 8px; font-weight: bold;">Area (hectares) / क्षेत्रफल (हेक्टेयर):</label>
-                            <input type="number" id="modal-area-input" value="1" min="0.1" step="0.1" onchange="loadInvestmentAnalysisInModal()" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #E8F5E8; font-size: 16px;">
+                            <input type="number" id="modal-area-input" value="1" min="0.1" step="0.1" onchange="loadInvestmentAnalysisOptimizedModal()" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #E8F5E8; font-size: 16px;">
                         </div>
                         <div id="modal-investment-content">
                             <div style="text-align: center; padding: 40px; color: #666;">Loading investment analysis... / निवेश विश्लेषण लोड हो रहा है...</div>
                         </div>
                     `;
                     container.appendChild(pageContent);
-                    loadInvestmentAnalysisInModal();
+                    setTimeout(() => loadInvestmentAnalysisOptimizedModal(), 100);
                     break;
                     
                 case 'climate':
@@ -1130,7 +1130,7 @@
                         <p style="margin-bottom: 20px; color: #666;">Comprehensive crop information / व्यापक फसल जानकारी</p>
                         <div style="margin: 20px 0;">
                             <label style="display: block; margin-bottom: 8px; font-weight: bold;">Select Crop / फसल चुनें:</label>
-                            <select id="modal-crop-detail-select" onchange="loadCropDetailsInModal()" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #E8F5E8; font-size: 16px;">
+                            <select id="modal-crop-detail-select" onchange="loadCropDetailsOptimizedModal()" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #E8F5E8; font-size: 16px;">
                                 <option value="rice">Rice / धान</option>
                                 <option value="wheat">Wheat / गेहूं</option>
                                 <option value="maize">Maize / मक्का</option>
@@ -1146,7 +1146,7 @@
                         </div>
                     `;
                     container.appendChild(pageContent);
-                    loadCropDetailsInModal();
+                    setTimeout(() => loadCropDetailsOptimizedModal(), 100);
                     break;
             }
         }
@@ -2221,6 +2221,279 @@
                     </div>
                 </div>
             `;
+        }
+
+        // Optimized modal functions for the navigation
+        async function loadMarketPricesOptimizedModal() {
+            const content = document.getElementById('modal-prices-content');
+            if (!content) return;
+            
+            content.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    ${OFFLINE_CROP_DATA.market_prices.map(price => `
+                        <div style="background: linear-gradient(135deg, #E8F5E8, #F1F8E9); padding: 20px; border-radius: 12px; border-left: 5px solid #4CAF50; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                <span style="font-size: 2rem; margin-right: 10px;">${cropEmojis[price.crop_name.toLowerCase()] || '🌾'}</span>
+                                <h4 style="color: #2E7D32; margin: 0; font-size: 1.2rem;">${price.crop_name}</h4>
+                            </div>
+                            <div style="text-align: center; margin-bottom: 15px;">
+                                <div style="font-size: 2rem; font-weight: bold; color: #1976D2; margin-bottom: 5px;">₹${price.price_per_kg}/kg</div>
+                                <div style="font-size: 0.9rem; color: #666; background: white; padding: 8px; border-radius: 6px;">
+                                    ${price.market_trend}
+                                </div>
+                            </div>
+                            <div style="background: rgba(76, 175, 80, 0.1); padding: 10px; border-radius: 6px; text-align: center;">
+                                <span style="font-size: 0.8rem; color: #2E7D32; font-weight: bold;">
+                                    📊 Market Status: ${price.market_trend.includes('High') ? 'Strong' : price.market_trend.includes('Low') ? 'Weak' : 'Stable'}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="margin-top: 25px; padding: 20px; background: #E3F2FD; border-radius: 10px; text-align: center;">
+                    <p style="color: #1976D2; font-size: 1rem; margin: 0; font-weight: bold;">
+                        📊 Prices updated daily from major markets / कीमतें प्रमुख बाजारों से दैनिक अपडेट होती हैं
+                    </p>
+                    <p style="color: #666; font-size: 0.9rem; margin: 5px 0 0 0; font-style: italic;">
+                        Data sourced from Jharkhand agricultural markets / झारखंड कृषि बाजारों से डेटा प्राप्त
+                    </p>
+                </div>
+            `;
+        }
+        
+        async function loadInvestmentAnalysisOptimizedModal() {
+            const cropSelect = document.getElementById('modal-crop-select');
+            const areaInput = document.getElementById('modal-area-input');
+            const content = document.getElementById('modal-investment-content');
+            
+            if (!cropSelect || !areaInput || !content) return;
+            
+            const selectedCrop = cropSelect.value;
+            const area = parseFloat(areaInput.value) || 1;
+            
+            // Enhanced investment data with more realistic figures
+            const investmentData = {
+                rice: { cost: 35000, yield: 3500, price: 25, season: 'Kharif', duration: '120-150 days' },
+                wheat: { cost: 28000, yield: 2800, price: 28, season: 'Rabi', duration: '110-130 days' },
+                maize: { cost: 25000, yield: 4000, price: 22, season: 'Kharif/Rabi', duration: '90-120 days' },
+                cotton: { cost: 45000, yield: 800, price: 85, season: 'Kharif', duration: '180-200 days' },
+                sugarcane: { cost: 65000, yield: 65000, price: 3.8, season: 'Annual', duration: '12-18 months' },
+                chickpea: { cost: 22000, yield: 1800, price: 65, season: 'Rabi', duration: '90-120 days' },
+                kidney_beans: { cost: 30000, yield: 1500, price: 120, season: 'Kharif', duration: '90-110 days' },
+                banana: { cost: 85000, yield: 25000, price: 15, season: 'Annual', duration: '12-15 months' }
+            };
+            
+            const data = investmentData[selectedCrop];
+            const totalCost = data.cost * area;
+            const totalYield = data.yield * area;
+            const totalRevenue = totalYield * data.price;
+            const profit = totalRevenue - totalCost;
+            const roi = ((profit / totalCost) * 100).toFixed(1);
+            
+            content.innerHTML = `
+                <div style="background: linear-gradient(135deg, #E8F5E8, #F1F8E9); padding: 25px; border-radius: 15px; border-left: 5px solid #4CAF50;">
+                    <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                        <span style="font-size: 2.5rem; margin-right: 15px;">${cropEmojis[selectedCrop] || '🌾'}</span>
+                        <div>
+                            <h4 style="color: #2E7D32; margin: 0; font-size: 1.4rem;">${cropNamesEnglish[selectedCrop] || selectedCrop}</h4>
+                            <p style="color: #666; margin: 5px 0 0 0; font-style: italic;">${cropNamesHindi[selectedCrop] || selectedCrop}</p>
+                            <p style="color: #666; margin: 5px 0 0 0; font-size: 0.9rem;">Season: ${data.season} | Duration: ${data.duration}</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                        <div style="text-align: center; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">💰</div>
+                            <div style="font-size: 1.6rem; font-weight: bold; color: #f44336; margin-bottom: 5px;">₹${totalCost.toLocaleString()}</div>
+                            <div style="font-size: 0.9rem; color: #666;">Total Investment</div>
+                            <div style="font-size: 0.8rem; color: #999; font-style: italic;">कुल निवेश</div>
+                        </div>
+                        
+                        <div style="text-align: center; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">📈</div>
+                            <div style="font-size: 1.6rem; font-weight: bold; color: #2196F3; margin-bottom: 5px;">₹${totalRevenue.toLocaleString()}</div>
+                            <div style="font-size: 0.9rem; color: #666;">Expected Revenue</div>
+                            <div style="font-size: 0.8rem; color: #999; font-style: italic;">अपेक्षित आय</div>
+                        </div>
+                        
+                        <div style="text-align: center; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">${profit > 0 ? '💚' : '💔'}</div>
+                            <div style="font-size: 1.6rem; font-weight: bold; color: ${profit > 0 ? '#4CAF50' : '#f44336'}; margin-bottom: 5px;">₹${profit.toLocaleString()}</div>
+                            <div style="font-size: 0.9rem; color: #666;">Net Profit</div>
+                            <div style="font-size: 0.8rem; color: #999; font-style: italic;">शुद्ध लाभ</div>
+                        </div>
+                        
+                        <div style="text-align: center; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">📊</div>
+                            <div style="font-size: 1.6rem; font-weight: bold; color: ${roi > 0 ? '#4CAF50' : '#f44336'}; margin-bottom: 5px;">${roi}%</div>
+                            <div style="font-size: 0.9rem; color: #666;">Return on Investment</div>
+                            <div style="font-size: 0.8rem; color: #999; font-style: italic;">निवेश पर रिटर्न</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                        <h5 style="color: #2E7D32; margin-bottom: 15px;">📋 Investment Breakdown / निवेश विवरण</h5>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <div>
+                                <p style="margin: 5px 0; font-size: 0.9rem;"><strong>Area:</strong> ${area} hectare(s)</p>
+                                <p style="margin: 5px 0; font-size: 0.9rem;"><strong>Expected Yield:</strong> ${totalYield.toLocaleString()} kg</p>
+                                <p style="margin: 5px 0; font-size: 0.9rem;"><strong>Market Price:</strong> ₹${data.price}/kg</p>
+                            </div>
+                            <div>
+                                <p style="margin: 5px 0; font-size: 0.9rem; color: ${profit > 0 ? '#4CAF50' : '#f44336'};"><strong>Profitability:</strong> ${profit > 0 ? 'Profitable' : 'Loss Making'}</p>
+                                <p style="margin: 5px 0; font-size: 0.9rem;"><strong>Risk Level:</strong> ${roi > 30 ? 'Low' : roi > 10 ? 'Medium' : 'High'}</p>
+                                <p style="margin: 5px 0; font-size: 0.9rem;"><strong>Recommendation:</strong> ${roi > 20 ? 'Highly Recommended' : roi > 10 ? 'Recommended' : 'Consider Alternatives'}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        async function loadCropDetailsOptimizedModal() {
+            const cropSelect = document.getElementById('modal-crop-detail-select');
+            const content = document.getElementById('modal-crops-content');
+            
+            if (!cropSelect || !content) return;
+            
+            const selectedCrop = cropSelect.value;
+            const cropData = OFFLINE_CROP_DATA.crop_details[selectedCrop];
+            
+            if (!cropData) {
+                content.innerHTML = '<div style="text-align: center; padding: 40px; color: #f44336;">Crop data not available</div>';
+                return;
+            }
+            
+            content.innerHTML = `
+                <div style="background: linear-gradient(135deg, #E8F5E8, #F1F8E9); padding: 25px; border-radius: 15px; border-left: 5px solid #4CAF50;">
+                    <div style="display: flex; align-items: center; margin-bottom: 25px;">
+                        <span style="font-size: 3rem; margin-right: 20px;">${cropEmojis[selectedCrop] || '🌾'}</span>
+                        <div>
+                            <h3 style="color: #2E7D32; margin: 0; font-size: 1.8rem;">${cropData.name_english}</h3>
+                            <p style="color: #666; margin: 5px 0; font-size: 1.2rem; font-style: italic;">${cropData.name_hindi}</p>
+                            <p style="color: #666; margin: 5px 0; font-size: 0.9rem;">Scientific Name: <em>${cropData.scientific_name || 'N/A'}</em></p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 25px;">
+                        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <h5 style="color: #2E7D32; margin-bottom: 15px; display: flex; align-items: center;">
+                                <span style="margin-right: 8px;">🗓️</span> Growing Season
+                            </h5>
+                            <p style="margin: 8px 0; font-size: 0.95rem;"><strong>Season:</strong> ${cropData.season}</p>
+                            <p style="margin: 8px 0; font-size: 0.95rem;"><strong>Duration:</strong> ${cropData.duration}</p>
+                            <p style="margin: 8px 0; font-size: 0.95rem;"><strong>Planting Time:</strong> ${cropData.planting_time || 'Varies by region'}</p>
+                        </div>
+                        
+                        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <h5 style="color: #2E7D32; margin-bottom: 15px; display: flex; align-items: center;">
+                                <span style="margin-right: 8px;">💧</span> Water Requirements
+                            </h5>
+                            <p style="margin: 8px 0; font-size: 0.95rem;"><strong>Water Need:</strong> ${cropData.water_requirement}</p>
+                            <p style="margin: 8px 0; font-size: 0.95rem;"><strong>Irrigation:</strong> ${cropData.irrigation_method || 'As per requirement'}</p>
+                            <p style="margin: 8px 0; font-size: 0.95rem;"><strong>Rainfall:</strong> ${cropData.rainfall_requirement || 'Moderate'}</p>
+                        </div>
+                        
+                        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <h5 style="color: #2E7D32; margin-bottom: 15px; display: flex; align-items: center;">
+                                <span style="margin-right: 8px;">🌡️</span> Climate Needs
+                            </h5>
+                            <p style="margin: 8px 0; font-size: 0.95rem;"><strong>Temperature:</strong> ${cropData.temperature_range || '20-30°C'}</p>
+                            <p style="margin: 8px 0; font-size: 0.95rem;"><strong>Humidity:</strong> ${cropData.humidity_range || '60-80%'}</p>
+                            <p style="margin: 8px 0; font-size: 0.95rem;"><strong>Soil pH:</strong> ${cropData.soil_ph || '6.0-7.5'}</p>
+                        </div>
+                    </div>
+                    
+                    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                        <h5 style="color: #2E7D32; margin-bottom: 15px; display: flex; align-items: center;">
+                            <span style="margin-right: 8px;">🌱</span> Ideal Growing Conditions
+                        </h5>
+                        <p style="margin: 0; font-size: 0.95rem; line-height: 1.6; color: #555;">
+                            ${cropData.ideal_conditions}
+                        </p>
+                    </div>
+                    
+                    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <h5 style="color: #2E7D32; margin-bottom: 15px; display: flex; align-items: center;">
+                            <span style="margin-right: 8px;">💡</span> Farming Tips / कृषि सुझाव
+                        </h5>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <div style="background: #F1F8E9; padding: 15px; border-radius: 8px;">
+                                <p style="margin: 0; font-size: 0.9rem; color: #2E7D32;"><strong>💰 Market Value:</strong> High demand crop with good market price</p>
+                            </div>
+                            <div style="background: #F1F8E9; padding: 15px; border-radius: 8px;">
+                                <p style="margin: 0; font-size: 0.9rem; color: #2E7D32;"><strong>🌾 Yield:</strong> ${cropData.average_yield || 'Good yield potential'}</p>
+                            </div>
+                            <div style="background: #F1F8E9; padding: 15px; border-radius: 8px;">
+                                <p style="margin: 0; font-size: 0.9rem; color: #2E7D32;"><strong>🛡️ Disease Resistance:</strong> ${cropData.disease_resistance || 'Moderate resistance'}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Fix the crop recommendation caching issue
+        async function getCropRecommendation() {
+            // Clear any previous results first
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            
+            const formData = new FormData(document.getElementById('cropForm'));
+            
+            // Add timestamp to prevent caching
+            const requestData = {
+                N: parseFloat(formData.get('N')),
+                P: parseFloat(formData.get('P')),
+                K: parseFloat(formData.get('K')),
+                temperature: parseFloat(formData.get('temperature')),
+                humidity: parseFloat(formData.get('humidity')),
+                ph: parseFloat(formData.get('ph')),
+                rainfall: parseFloat(formData.get('rainfall')),
+                timestamp: Date.now() // Add timestamp to prevent caching
+            };
+            
+            try {
+                let recommendedCrop;
+                
+                if (isOffline || !navigator.onLine) {
+                    // Use offline prediction
+                    recommendedCrop = getOfflinePrediction(requestData);
+                } else {
+                    // Try online API with cache-busting
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/recommend-crop?t=${Date.now()}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                                'Pragma': 'no-cache',
+                                'Expires': '0'
+                            },
+                            body: JSON.stringify(requestData)
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            recommendedCrop = data.recommended_crop;
+                        } else {
+                            throw new Error('API request failed');
+                        }
+                    } catch (apiError) {
+                        console.log('API failed, using offline prediction:', apiError);
+                        recommendedCrop = getOfflinePrediction(requestData);
+                    }
+                }
+                
+                displayRecommendation(recommendedCrop, requestData);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                displayError('Failed to get crop recommendation. Please try again.');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
         }
 
         // Initialize application and check connectivity
