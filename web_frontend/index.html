@@ -1060,7 +1060,11 @@
                         </div>
                     `;
                     container.appendChild(pageContent);
-                    setTimeout(() => loadMarketPricesOptimizedModal(), 100);
+                    // Wait for DOM to be ready, then load market prices
+                    setTimeout(() => {
+                        console.log('🔄 Attempting to load market prices...');
+                        loadMarketPricesOptimizedModal();
+                    }, 200);
                     break;
                     
                 case 'investment':
@@ -2274,6 +2278,22 @@
             `;
         }
 
+        // Helper function to get crop emoji
+        function getCropEmoji(cropName) {
+            const name = cropName.toLowerCase();
+            const emojiMap = {
+                'rice': '🌾',
+                'wheat': '🌾',
+                'maize': '🌽',
+                'cotton': '🌿',
+                'sugarcane': '🎋',
+                'chickpea': '🫘',
+                'kidney beans': '🫘',
+                'banana': '🍌'
+            };
+            return emojiMap[name] || '🌾';
+        }
+
         // Optimized modal functions for the navigation
         async function loadMarketPricesOptimizedModal() {
             console.log('💰 Loading market prices...');
@@ -2302,7 +2322,7 @@
                         ${OFFLINE_CROP_DATA.market_prices.map(price => `
                             <div style="background: linear-gradient(135deg, #E8F5E8, #F1F8E9); padding: 20px; border-radius: 12px; border-left: 5px solid #4CAF50; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                                 <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                                    <span style="font-size: 2rem; margin-right: 10px;">${cropEmojis[price.crop_name.toLowerCase()] || '🌾'}</span>
+                                    <span style="font-size: 2rem; margin-right: 10px;">${getCropEmoji(price.crop_name)}</span>
                                     <div>
                                         <h4 style="color: #2E7D32; margin: 0; font-size: 1.2rem;">${price.crop_name}</h4>
                                         <p style="color: #666; margin: 0; font-size: 0.9rem; font-style: italic;">${price.crop_name_hindi}</p>
@@ -2620,6 +2640,24 @@
                 console.log('🚀 AUTO-TESTING ALL TABS...');
                 testAllTabs();
             }, 2000);
+            
+            // Add manual test button for market prices
+            window.testMarketPrices = function() {
+                console.log('🧪 Manual market prices test...');
+                // Create a test div
+                const testDiv = document.createElement('div');
+                testDiv.id = 'modal-prices-content';
+                testDiv.innerHTML = '<div>Loading test...</div>';
+                document.body.appendChild(testDiv);
+                
+                // Test the function
+                loadMarketPricesOptimizedModal();
+                
+                setTimeout(() => {
+                    console.log('Test div content:', testDiv.innerHTML);
+                }, 1000);
+            };
+            console.log('🧪 To test market prices manually, run: testMarketPrices()');
         });
     </script>
 </body>
