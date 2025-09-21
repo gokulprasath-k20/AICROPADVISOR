@@ -208,64 +208,73 @@
 
         .nav-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
             margin-bottom: 20px;
         }
 
         .nav-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #4CAF50, #66BB6A);
+            border-radius: 8px;
+            padding: 12px 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             text-decoration: none;
-            color: inherit;
-            border: 2px solid transparent;
-            min-height: 80px;
+            color: white;
+            border: none;
+            min-height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
         .nav-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.15);
-            border-color: #4CAF50;
+            transform: translateY(-1px) scale(1.02);
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+            background: linear-gradient(135deg, #388E3C, #4CAF50);
         }
 
         .nav-card:active {
-            transform: translateY(0);
+            transform: translateY(0) scale(0.98);
         }
 
         .nav-card-content {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: 4px;
         }
 
         .nav-card-icon {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
+            margin-bottom: 2px;
         }
 
         .nav-card-title {
             font-weight: bold;
-            color: #2E7D32;
-            font-size: 1rem;
+            color: white;
+            font-size: 0.8rem;
+            line-height: 1.1;
         }
 
         .nav-card-subtitle {
-            font-size: 0.85rem;
-            color: #666;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.9);
             font-style: italic;
+            line-height: 1;
         }
 
-        .tab-content {
-            display: none;
-        }
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
 
         .tab-content.active {
             display: block;
@@ -405,13 +414,13 @@
             }
             
             .nav-grid {
-                grid-template-columns: 1fr;
-                gap: 12px;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
             }
             
             .nav-card {
-                padding: 15px;
-                min-height: 70px;
+                min-height: 50px;
+                padding: 8px 4px;
             }
             
             .nav-card-icon {
@@ -950,19 +959,26 @@
             document.getElementById('error').style.display = 'block';
         }
         
-        // Navigation Management
+        // Fast Navigation Management
         function navigateToPage(pageName) {
-            // Create page URLs
-            const pageUrls = {
-                'prices': 'prices.html',
-                'investment': 'investment.html', 
-                'climate': 'climate.html',
-                'crops': 'crops.html'
-            };
-            
-            // For now, we'll create a simple modal/overlay system
-            // In a real app, these would be separate HTML files
+            // Instant page switching with optimized loading
             showPageModal(pageName);
+            
+            // Pre-load data for faster experience
+            switch(pageName) {
+                case 'prices':
+                    setTimeout(() => loadMarketPricesOptimized(), 50);
+                    break;
+                case 'investment':
+                    setTimeout(() => loadInvestmentAnalysisOptimized(), 50);
+                    break;
+                case 'climate':
+                    setTimeout(() => loadClimateDataOptimized(), 50);
+                    break;
+                case 'crops':
+                    setTimeout(() => loadCropDetailsOptimized(), 50);
+                    break;
+            }
         }
         
         function showPageModal(pageName) {
@@ -1817,8 +1833,6 @@
                                 }).join('')}
                             </div>
                         </div>
-                        ` : ''}
-                        
                         <div style="background: #FFF3E0; padding: 15px; border-radius: 10px; margin-top: 20px; border-left: 4px solid #FF9800;">
                             <h5 style="color: #E65100; margin-bottom: 10px;">📊 Climate Analysis / जलवायु विश्लेषण</h5>
                             <div style="font-size: 0.9rem; color: #555; line-height: 1.6;">
@@ -2002,6 +2016,211 @@
                     </div>
                 `;
             }
+        }
+
+        // Optimized loading functions for faster performance
+        async function loadMarketPricesOptimized() {
+            const content = document.querySelector('#page-content');
+            if (!content) return;
+            
+            // Show instant loading with cached data first
+            content.innerHTML = `
+                <h3 style="color: #2E7D32; margin-bottom: 20px;">💰 Market Prices / बाज़ार भाव</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    ${OFFLINE_CROP_DATA.market_prices.map(price => `
+                        <div style="background: linear-gradient(135deg, #E8F5E8, #F1F8E9); padding: 15px; border-radius: 10px; border-left: 4px solid #4CAF50;">
+                            <h4 style="color: #2E7D32; margin-bottom: 8px;">${price.crop_name}</h4>
+                            <p style="font-size: 1.2rem; font-weight: bold; color: #1976D2; margin: 5px 0;">₹${price.price_per_kg}/kg</p>
+                            <p style="font-size: 0.9rem; color: #666; margin: 0;">${price.market_trend}</p>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="margin-top: 20px; padding: 15px; background: #E3F2FD; border-radius: 8px;">
+                    <p style="color: #1976D2; font-size: 0.9rem; margin: 0;">
+                        📊 Prices updated daily / कीमतें दैनिक अपडेट होती हैं
+                    </p>
+                </div>
+            `;
+        }
+        
+        async function loadInvestmentAnalysisOptimized() {
+            const content = document.querySelector('#page-content');
+            if (!content) return;
+            
+            content.innerHTML = `
+                <h3 style="color: #2E7D32; margin-bottom: 20px;">💼 Investment Analysis / निवेश विश्लेषण</h3>
+                <div style="background: #F9F9F9; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Select Crop / फसल चुनें:</label>
+                            <select id="invest-crop" style="width: 100%; padding: 10px; border-radius: 5px; border: 2px solid #E8F5E8;">
+                                <option value="rice">Rice / धान</option>
+                                <option value="wheat">Wheat / गेहूं</option>
+                                <option value="maize">Maize / मक्का</option>
+                                <option value="sugarcane">Sugarcane / गन्ना</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Area (acres) / क्षेत्रफल:</label>
+                            <input type="number" id="invest-area" value="1" min="0.1" step="0.1" style="width: 100%; padding: 10px; border-radius: 5px; border: 2px solid #E8F5E8;">
+                        </div>
+                    </div>
+                    <button onclick="calculateInvestmentFast()" style="background: #4CAF50; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                        🧮 Calculate Investment / निवेश की गणना करें
+                    </button>
+                </div>
+                <div id="investment-result"></div>
+            `;
+        }
+        
+        async function loadClimateDataOptimized() {
+            const content = document.querySelector('#page-content');
+            if (!content) return;
+            
+            content.innerHTML = `
+                <h3 style="color: #2E7D32; margin-bottom: 20px;">🌤️ Climate Data / जलवायु डेटा</h3>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: bold;">Select District / जिला चुनें:</label>
+                    <select id="climate-district" onchange="loadDistrictClimate()" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #E8F5E8; font-size: 16px;">
+                        <option value="">-- Select District / जिला चुनें --</option>
+                        <option value="Ranchi">Ranchi / रांची</option>
+                        <option value="Dhanbad">Dhanbad / धनबाद</option>
+                        <option value="Jamshedpur">Jamshedpur / जमशेदपुर</option>
+                        <option value="Bokaro">Bokaro / बोकारो</option>
+                        <option value="Hazaribagh">Hazaribagh / हजारीबाग</option>
+                        <option value="Palamu">Palamu / पलामू</option>
+                        <option value="Garhwa">Garhwa / गढ़वा</option>
+                        <option value="Koderma">Koderma / कोडरमा</option>
+                        <option value="Deoghar">Deoghar / देवघर</option>
+                        <option value="Dumka">Dumka / दुमका</option>
+                    </select>
+                </div>
+                <div id="climate-result">
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <p>Please select a district to view climate data</p>
+                        <p style="font-style: italic; color: #999;">कृपया जलवायु डेटा देखने के लिए एक जिला चुनें</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        async function loadCropDetailsOptimized() {
+            const content = document.querySelector('#page-content');
+            if (!content) return;
+            
+            content.innerHTML = `
+                <h3 style="color: #2E7D32; margin-bottom: 20px;">🌾 Crop Details / फसल विवरण</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+                    ${Object.entries(OFFLINE_CROP_DATA.crop_details).map(([key, crop]) => `
+                        <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-left: 4px solid #4CAF50;">
+                            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                <span style="font-size: 2rem; margin-right: 10px;">${cropEmojis[key] || '🌱'}</span>
+                                <div>
+                                    <h4 style="color: #2E7D32; margin: 0;">${crop.name_english}</h4>
+                                    <p style="color: #666; margin: 0; font-style: italic;">${crop.name_hindi}</p>
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <p style="margin: 5px 0;"><strong>Season:</strong> ${crop.season}</p>
+                                <p style="margin: 5px 0;"><strong>Duration:</strong> ${crop.duration}</p>
+                                <p style="margin: 5px 0;"><strong>Water Need:</strong> ${crop.water_requirement}</p>
+                            </div>
+                            <div style="background: #F1F8E9; padding: 10px; border-radius: 6px;">
+                                <p style="margin: 0; font-size: 0.9rem; color: #2E7D32;">
+                                    <strong>Best Conditions:</strong> ${crop.ideal_conditions}
+                                </p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        // Fast investment calculation
+        function calculateInvestmentFast() {
+            const crop = document.getElementById('invest-crop').value;
+            const area = parseFloat(document.getElementById('invest-area').value) || 1;
+            
+            // Sample investment data for quick calculation
+            const investmentData = {
+                rice: { cost: 25000, yield: 2500, price: 20 },
+                wheat: { cost: 20000, yield: 2000, price: 22 },
+                maize: { cost: 18000, yield: 3000, price: 18 },
+                sugarcane: { cost: 45000, yield: 50000, price: 3.5 }
+            };
+            
+            const data = investmentData[crop];
+            const totalCost = data.cost * area;
+            const totalYield = data.yield * area;
+            const totalRevenue = totalYield * data.price;
+            const profit = totalRevenue - totalCost;
+            const roi = ((profit / totalCost) * 100).toFixed(1);
+            
+            document.getElementById('investment-result').innerHTML = `
+                <div style="background: linear-gradient(135deg, #E8F5E8, #F1F8E9); padding: 20px; border-radius: 10px; border-left: 4px solid #4CAF50;">
+                    <h4 style="color: #2E7D32; margin-bottom: 15px;">📊 Investment Analysis Results</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                        <div style="text-align: center; background: white; padding: 15px; border-radius: 8px;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: #f44336;">₹${totalCost.toLocaleString()}</div>
+                            <div style="font-size: 0.9rem; color: #666;">Total Cost / कुल लागत</div>
+                        </div>
+                        <div style="text-align: center; background: white; padding: 15px; border-radius: 8px;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: #2196F3;">₹${totalRevenue.toLocaleString()}</div>
+                            <div style="font-size: 0.9rem; color: #666;">Revenue / आय</div>
+                        </div>
+                        <div style="text-align: center; background: white; padding: 15px; border-radius: 8px;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: ${profit > 0 ? '#4CAF50' : '#f44336'}">₹${profit.toLocaleString()}</div>
+                            <div style="font-size: 0.9rem; color: #666;">Profit / लाभ</div>
+                        </div>
+                        <div style="text-align: center; background: white; padding: 15px; border-radius: 8px;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: ${roi > 0 ? '#4CAF50' : '#f44336'}">${roi}%</div>
+                            <div style="font-size: 0.9rem; color: #666;">ROI / निवेश पर रिटर्न</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Fast district climate loading
+        function loadDistrictClimate() {
+            const district = document.getElementById('climate-district').value;
+            if (!district) return;
+            
+            const data = OFFLINE_CROP_DATA.districts[district];
+            if (!data) return;
+            
+            document.getElementById('climate-result').innerHTML = `
+                <div style="background: linear-gradient(135deg, #E8F5E8, #F1F8E9); padding: 25px; border-radius: 15px; border-left: 5px solid #4CAF50;">
+                    <h4 style="color: #2E7D32; margin-bottom: 20px; text-align: center;">📍 ${district} / ${data.name_hi}</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                        <div style="background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">🌡️</div>
+                            <div style="font-size: 1.8rem; font-weight: bold; color: #FF5722; margin-bottom: 5px;">${data.average_temperature}°C</div>
+                            <div style="color: #666; font-size: 0.9rem;">Temperature / तापमान</div>
+                        </div>
+                        <div style="background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">🌧️</div>
+                            <div style="font-size: 1.8rem; font-weight: bold; color: #2196F3; margin-bottom: 5px;">${data.average_rainfall}mm</div>
+                            <div style="color: #666; font-size: 0.9rem;">Rainfall / वर्षा</div>
+                        </div>
+                        <div style="background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">💧</div>
+                            <div style="font-size: 1.8rem; font-weight: bold; color: #00BCD4; margin-bottom: 5px;">${data.average_humidity}%</div>
+                            <div style="color: #666; font-size: 0.9rem;">Humidity / नमी</div>
+                        </div>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 10px;">
+                        <h5 style="color: #2E7D32; margin-bottom: 10px;">🌾 Suitable Crops / उपयुक्त फसलें</h5>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            ${data.suitable_crops.map(crop => `
+                                <span style="background: #4CAF50; color: white; padding: 5px 12px; border-radius: 15px; font-size: 0.9rem;">
+                                    ${cropEmojis[crop] || '🌱'} ${cropNamesEnglish[crop] || crop}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         // Initialize application and check connectivity
