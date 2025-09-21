@@ -1991,6 +1991,57 @@
             }
         }
 
+        // Comprehensive test function for all tabs
+        function testAllTabs() {
+            console.log('🧪 TESTING ALL TABS...');
+            
+            // Test 1: Market Prices
+            console.log('1️⃣ Testing Market Prices...');
+            try {
+                navigateToPage('prices');
+                console.log('✅ Market Prices tab opened successfully');
+            } catch (error) {
+                console.error('❌ Market Prices failed:', error);
+            }
+            
+            setTimeout(() => {
+                // Test 2: Investment Analysis
+                console.log('2️⃣ Testing Investment Analysis...');
+                try {
+                    navigateToPage('investment');
+                    console.log('✅ Investment Analysis tab opened successfully');
+                } catch (error) {
+                    console.error('❌ Investment Analysis failed:', error);
+                }
+            }, 1000);
+            
+            setTimeout(() => {
+                // Test 3: Climate Data
+                console.log('3️⃣ Testing Climate Data...');
+                try {
+                    navigateToPage('climate');
+                    console.log('✅ Climate Data tab opened successfully');
+                } catch (error) {
+                    console.error('❌ Climate Data failed:', error);
+                }
+            }, 2000);
+            
+            setTimeout(() => {
+                // Test 4: Crop Details
+                console.log('4️⃣ Testing Crop Details...');
+                try {
+                    navigateToPage('crops');
+                    console.log('✅ Crop Details tab opened successfully');
+                } catch (error) {
+                    console.error('❌ Crop Details failed:', error);
+                }
+            }, 3000);
+            
+            setTimeout(() => {
+                console.log('🎉 ALL TABS TESTED! Check console for results.');
+            }, 4000);
+        }
+        
         // Test function to load climate data for Ranchi
         function testClimateData() {
             console.log('🧪 Testing climate data for Ranchi');
@@ -2519,6 +2570,20 @@
             
             // Add test button for debugging
             console.log('🧪 To test climate data, run: testClimateData()');
+            console.log('🧪 To test all tabs, run: testAllTabs()');
+            
+            // Test all navigation functions
+            console.log('🧪 Testing navigation functions...');
+            console.log('Market Prices function:', typeof loadMarketPricesOptimizedModal);
+            console.log('Investment Analysis function:', typeof loadInvestmentAnalysisOptimizedModal);
+            console.log('Crop Details function:', typeof loadCropDetailsOptimizedModal);
+            console.log('Navigate function:', typeof navigateToPage);
+            
+            // Auto-test all tabs after 2 seconds
+            setTimeout(() => {
+                console.log('🚀 AUTO-TESTING ALL TABS...');
+                testAllTabs();
+            }, 2000);
         });
     </script>
 </body>
