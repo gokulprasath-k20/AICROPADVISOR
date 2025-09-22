@@ -967,18 +967,105 @@
             // Pre-load data for faster experience
             switch(pageName) {
                 case 'prices':
-                    setTimeout(() => loadMarketPricesOptimized(), 50);
+                    setTimeout(() => loadMarketPricesOptimizedModal(), 100);
                     break;
                 case 'investment':
-                    setTimeout(() => loadInvestmentAnalysisOptimized(), 50);
+                    setTimeout(() => loadInvestmentAnalysisOptimizedModal(), 100);
                     break;
                 case 'climate':
-                    setTimeout(() => loadClimateDataOptimized(), 50);
+                    setTimeout(() => loadClimateDataOptimizedModal(), 100);
                     break;
                 case 'crops':
-                    setTimeout(() => loadCropDetailsOptimized(), 50);
+                    setTimeout(() => loadCropDetailsOptimizedModal(), 100);
                     break;
             }
+        }
+        
+        // Add missing climate data modal function
+        async function loadClimateDataOptimizedModal() {
+            const districtSelect = document.getElementById('modal-district-select');
+            const content = document.getElementById('modal-climate-content');
+            
+            if (!districtSelect || !content) return;
+            
+            const selectedDistrict = districtSelect.value;
+            
+            if (!selectedDistrict) {
+                content.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <p>Please select a district to view climate data</p>
+                        <p style="font-style: italic; color: #999;">कृपया जलवायु डेटा देखने के लिए एक जिला चुनें</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const districtData = OFFLINE_CROP_DATA.districts[selectedDistrict];
+            
+            if (!districtData) {
+                content.innerHTML = '<div style="text-align: center; padding: 40px; color: #f44336;">District data not available</div>';
+                return;
+            }
+            
+            content.innerHTML = `
+                <div style="background: linear-gradient(135deg, #E3F2FD, #E8F5E8); padding: 25px; border-radius: 15px; border-left: 5px solid #2196F3;">
+                    <div style="display: flex; align-items: center; margin-bottom: 25px;">
+                        <span style="font-size: 3rem; margin-right: 20px;">📍</span>
+                        <div>
+                            <h3 style="color: #1976D2; margin: 0; font-size: 1.8rem;">${districtData.name_en}</h3>
+                            <p style="color: #666; margin: 5px 0; font-size: 1.2rem; font-style: italic;">${districtData.name_hi}</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px;">
+                        <div style="text-align: center; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">🌡️</div>
+                            <div style="font-size: 1.6rem; font-weight: bold; color: #FF5722; margin-bottom: 5px;">${districtData.average_temperature}°C</div>
+                            <div style="font-size: 0.9rem; color: #666;">Average Temperature</div>
+                            <div style="font-size: 0.8rem; color: #999; font-style: italic;">औसत तापमान</div>
+                        </div>
+                        
+                        <div style="text-align: center; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">🌧️</div>
+                            <div style="font-size: 1.6rem; font-weight: bold; color: #2196F3; margin-bottom: 5px;">${districtData.average_rainfall}mm</div>
+                            <div style="font-size: 0.9rem; color: #666;">Annual Rainfall</div>
+                            <div style="font-size: 0.8rem; color: #999; font-style: italic;">वार्षिक वर्षा</div>
+                        </div>
+                        
+                        <div style="text-align: center; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">💧</div>
+                            <div style="font-size: 1.6rem; font-weight: bold; color: #00BCD4; margin-bottom: 5px;">${districtData.average_humidity}%</div>
+                            <div style="font-size: 0.9rem; color: #666;">Average Humidity</div>
+                            <div style="font-size: 0.8rem; color: #999; font-style: italic;">औसत नमी</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <h5 style="color: #1976D2; margin-bottom: 15px; display: flex; align-items: center;">
+                            <span style="margin-right: 8px;">🌾</span> Suitable Crops / उपयुक्त फसलें
+                        </h5>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            ${districtData.suitable_crops.map(crop => {
+                                const cropData = OFFLINE_CROP_DATA.crops[crop];
+                                return `
+                                    <div style="background: #E8F5E8; padding: 10px 15px; border-radius: 20px; display: flex; align-items: center; gap: 8px;">
+                                        <span style="font-size: 1.2rem;">${cropData ? cropData.emoji : '🌱'}</span>
+                                        <div>
+                                            <div style="font-size: 0.9rem; font-weight: bold; color: #2E7D32;">${cropData ? cropData.name_en : crop}</div>
+                                            <div style="font-size: 0.8rem; color: #666; font-style: italic;">${cropData ? cropData.name_hi : crop}</div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Add function to load selected district climate
+        function loadSelectedDistrictClimate() {
+            loadClimateDataOptimizedModal();
         }
         
         function showPageModal(pageName) {
@@ -1155,9 +1242,20 @@
             }
         }
 
+        // Helper function to get crop emoji
+        function getCropEmoji(cropName) {
+            const emojiMap = {
+                'Rice': '🌾', 'Wheat': '🌾', 'Maize': '🌽', 'Cotton': '🌿',
+                'Sugarcane': '🎋', 'Chickpea': '🫘', 'Kidney Beans': '🫘', 'Banana': '🍌'
+            };
+            return emojiMap[cropName] || '🌱';
+        }
+        
         // Load Market Prices
         async function loadMarketPrices() {
             const content = document.getElementById('prices-content');
+            if (!content) return;
+            
             content.innerHTML = '<div class="loading-tab">Loading market prices... / बाजार भाव लोड हो रहे हैं...</div>';
             
             try {
@@ -1865,6 +1963,7 @@
                             </p>
                         </div>
                         `}
+                        ` : ''}
                     </div>
                 `;
                 
@@ -2296,7 +2395,7 @@
 
         // Optimized modal functions for the navigation
         async function loadMarketPricesOptimizedModal() {
-            console.log('💰 Loading market prices...');
+            console.log('🔄 Loading market prices in modal...');
             const content = document.getElementById('modal-prices-content');
             
             if (!content) {
@@ -2304,47 +2403,72 @@
                 return;
             }
             
-            console.log('📊 Market prices data:', OFFLINE_CROP_DATA.market_prices);
-            
-            if (!OFFLINE_CROP_DATA.market_prices || OFFLINE_CROP_DATA.market_prices.length === 0) {
-                content.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: #f44336;">
-                        <h3>❌ Market Data Not Available</h3>
-                        <p>Market prices data is not loaded. Please check the offline data.</p>
-                    </div>
-                `;
-                return;
-            }
-            
             try {
+                // Get market prices data
+                let marketData;
+                if (isOffline || !navigator.onLine) {
+                    marketData = OFFLINE_CROP_DATA.getMarketPrices();
+                } else {
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/crop-prices`);
+                        marketData = await response.json();
+                    } catch (apiError) {
+                        console.log('Market prices API failed, using offline data');
+                        marketData = OFFLINE_CROP_DATA.getMarketPrices();
+                    }
+                }
+                
+                if (!marketData || !marketData.prices || marketData.prices.length === 0) {
+                    content.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #f44336;">
+                            <h3>❌ Market Data Not Available</h3>
+                            <p>Market prices data is not loaded. Please check the connection.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
                 content.innerHTML = `
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                        ${OFFLINE_CROP_DATA.market_prices.map(price => `
-                            <div style="background: linear-gradient(135deg, #E8F5E8, #F1F8E9); padding: 20px; border-radius: 12px; border-left: 5px solid #4CAF50; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                                <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                                    <span style="font-size: 2rem; margin-right: 10px;">${getCropEmoji(price.crop_name)}</span>
-                                    <div>
-                                        <h4 style="color: #2E7D32; margin: 0; font-size: 1.2rem;">${price.crop_name}</h4>
-                                        <p style="color: #666; margin: 0; font-size: 0.9rem; font-style: italic;">${price.crop_name_hindi}</p>
+                        ${marketData.prices.map(price => {
+                            const cropEmoji = cropEmojis[price.crop] || '🌱';
+                            const cropNameEng = cropNamesEnglish[price.crop] || price.crop;
+                            const cropNameHin = cropNamesHindi[price.crop] || price.crop;
+                            
+                            const trendIcon = price.market_trend === 'up' ? '📈' : 
+                                            price.market_trend === 'down' ? '📉' : '➡️';
+                            const trendText = price.market_trend === 'up' ? 'Rising Market' : 
+                                            price.market_trend === 'down' ? 'Falling Market' : 'Stable Market';
+                            const trendColor = price.market_trend === 'up' ? '#4CAF50' : 
+                                             price.market_trend === 'down' ? '#f44336' : '#FF9800';
+                            
+                            return `
+                                <div style="background: linear-gradient(135deg, #E8F5E8, #F1F8E9); padding: 20px; border-radius: 12px; border-left: 5px solid #4CAF50; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                        <span style="font-size: 2rem; margin-right: 10px;">${cropEmoji}</span>
+                                        <div>
+                                            <h4 style="color: #2E7D32; margin: 0; font-size: 1.2rem;">${cropNameEng}</h4>
+                                            <p style="color: #666; margin: 0; font-size: 0.9rem; font-style: italic;">${cropNameHin}</p>
+                                        </div>
+                                    </div>
+                                    <div style="text-align: center; margin-bottom: 15px;">
+                                        <div style="font-size: 2rem; font-weight: bold; color: #1976D2; margin-bottom: 5px;">₹${price.current_price_per_kg.toFixed(2)}/kg</div>
+                                        <div style="font-size: 0.9rem; color: ${trendColor}; background: white; padding: 8px; border-radius: 6px; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                                            <span>${trendIcon}</span>
+                                            <span>${trendText}</span>
+                                        </div>
+                                    </div>
+                                    <div style="background: rgba(76, 175, 80, 0.1); padding: 10px; border-radius: 6px; text-align: center;">
+                                        <span style="font-size: 0.8rem; color: #2E7D32; font-weight: bold;">
+                                            📊 Market Status: ${price.market_trend === 'up' ? 'Strong' : price.market_trend === 'down' ? 'Weak' : 'Stable'}
+                                        </span>
+                                    </div>
+                                    <div style="text-align: center; margin-top: 10px; font-size: 0.8rem; color: #999;">
+                                        Updated: ${new Date(price.last_updated).toLocaleDateString()}
                                     </div>
                                 </div>
-                                <div style="text-align: center; margin-bottom: 15px;">
-                                    <div style="font-size: 2rem; font-weight: bold; color: #1976D2; margin-bottom: 5px;">₹${price.price_per_kg}/kg</div>
-                                    <div style="font-size: 0.9rem; color: #666; background: white; padding: 8px; border-radius: 6px;">
-                                        ${price.market_trend}
-                                    </div>
-                                </div>
-                                <div style="background: rgba(76, 175, 80, 0.1); padding: 10px; border-radius: 6px; text-align: center;">
-                                    <span style="font-size: 0.8rem; color: #2E7D32; font-weight: bold;">
-                                        📊 Status: ${price.market_trend.includes('High') || price.market_trend.includes('rising') || price.market_trend.includes('premium') || price.market_trend.includes('excellent') ? 'Strong Market' : 
-                                                    price.market_trend.includes('Low') || price.market_trend.includes('falling') ? 'Weak Market' : 'Stable Market'}
-                                    </span>
-                                </div>
-                                <div style="text-align: center; margin-top: 10px; font-size: 0.8rem; color: #999;">
-                                    Updated: ${price.last_updated}
-                                </div>
-                            </div>
-                        `).join('')}
+                            `;
+                        }).join('')}
                     </div>
                     <div style="margin-top: 25px; padding: 20px; background: #E3F2FD; border-radius: 10px; text-align: center;">
                         <p style="color: #1976D2; font-size: 1rem; margin: 0; font-weight: bold;">

@@ -251,7 +251,7 @@ const OFFLINE_CROP_DATA = {
         }
     ],
 
-    // Simple offline crop recommendation logic - supports decimal inputs
+    // Enhanced offline crop recommendation logic - supports decimal inputs
     getCropRecommendation: function(N, P, K, temperature, humidity, ph, rainfall) {
         // Convert all inputs to numbers to ensure decimal support
         N = parseFloat(N) || 0;
@@ -262,60 +262,146 @@ const OFFLINE_CROP_DATA = {
         ph = parseFloat(ph) || 0;
         rainfall = parseFloat(rainfall) || 0;
         
-        // Basic rule-based prediction for offline use - works with decimals
-        if (rainfall > 200.0 && humidity > 80.0 && temperature > 23.0) {
-            return {
-                crop: 'rice',
-                predicted_yield_kg_per_ha: 3500,
-                sustainability_score: 8.5,
-                confidence: 0.85,
-                recommendations: [
-                    'Best season for rice: Kharif / धान के लिए सबसे अच्छा मौसम: खरीफ',
-                    'Water requirement: High / पानी की आवश्यकता: उच्च',
-                    'Expected investment: ₹45,000 per hectare / अपेक्षित निवेश: ₹45,000 प्रति हेक्टेयर',
-                    'Suitable districts: Ranchi, Dhanbad, Jamshedpur, Bokaro'
-                ]
-            };
-        } else if (temperature < 25.0 && rainfall < 100.0 && ph > 6.5) {
-            return {
-                crop: 'wheat',
-                predicted_yield_kg_per_ha: 2800,
-                sustainability_score: 7.5,
-                confidence: 0.80,
-                recommendations: [
-                    'Best season for wheat: Rabi / गेहूं के लिए सबसे अच्छा मौसम: रबी',
-                    'Water requirement: Medium / पानी की आवश्यकता: मध्यम',
-                    'Expected investment: ₹28,000 per hectare / अपेक्षित निवेश: ₹28,000 प्रति हेक्टेयर',
-                    'Suitable districts: Palamu, Garhwa, Latehar'
-                ]
-            };
-        } else if (temperature > 22.0 && temperature < 28.0 && rainfall > 100.0 && rainfall < 200.0) {
-            return {
-                crop: 'maize',
-                predicted_yield_kg_per_ha: 3200,
-                sustainability_score: 8.0,
-                confidence: 0.88,
-                recommendations: [
-                    'Best season for maize: Kharif/Rabi / मक्का के लिए सबसे अच्छा मौसम: खरीफ/रबी',
-                    'Water requirement: Medium / पानी की आवश्यकता: मध्यम',
-                    'Expected investment: ₹25,000 per hectare / अपेक्षित निवेश: ₹25,000 प्रति हेक्टेयर',
-                    'Suitable districts: Ranchi, Hazaribagh, Koderma'
-                ]
-            };
-        } else {
-            return {
-                crop: 'chickpea',
-                predicted_yield_kg_per_ha: 1800,
-                sustainability_score: 9.0,
-                confidence: 0.75,
-                recommendations: [
-                    'Best season for chickpea: Rabi / चना के लिए सबसे अच्छा मौसम: रबी',
-                    'Water requirement: Low / पानी की आवश्यकता: कम',
-                    'Expected investment: ₹20,000 per hectare / अपेक्षित निवेश: ₹20,000 प्रति हेक्टेयर',
-                    'Suitable districts: Palamu, Garhwa, Latehar'
-                ]
-            };
+        // Calculate crop scores based on multiple factors
+        const cropScores = {};
+        
+        // Rice scoring - prefers high rainfall, humidity, temperature
+        cropScores.rice = 0;
+        if (rainfall >= 150) cropScores.rice += 30;
+        else if (rainfall >= 100) cropScores.rice += 20;
+        else if (rainfall >= 50) cropScores.rice += 10;
+        
+        if (humidity >= 70) cropScores.rice += 25;
+        else if (humidity >= 60) cropScores.rice += 15;
+        
+        if (temperature >= 22 && temperature <= 30) cropScores.rice += 20;
+        if (ph >= 5.5 && ph <= 7.0) cropScores.rice += 15;
+        if (N >= 80) cropScores.rice += 10;
+        
+        // Wheat scoring - prefers cooler temperatures, moderate rainfall
+        cropScores.wheat = 0;
+        if (temperature >= 15 && temperature <= 25) cropScores.wheat += 30;
+        if (rainfall >= 50 && rainfall <= 150) cropScores.wheat += 25;
+        if (humidity >= 50 && humidity <= 70) cropScores.wheat += 20;
+        if (ph >= 6.0 && ph <= 7.5) cropScores.wheat += 15;
+        if (N >= 60) cropScores.wheat += 10;
+        
+        // Maize scoring - versatile crop
+        cropScores.maize = 0;
+        if (temperature >= 20 && temperature <= 30) cropScores.maize += 25;
+        if (rainfall >= 80 && rainfall <= 200) cropScores.maize += 25;
+        if (humidity >= 55 && humidity <= 75) cropScores.maize += 20;
+        if (ph >= 5.8 && ph <= 7.8) cropScores.maize += 15;
+        if (P >= 40) cropScores.maize += 10;
+        if (K >= 40) cropScores.maize += 5;
+        
+        // Cotton scoring - warm weather, moderate water
+        cropScores.cotton = 0;
+        if (temperature >= 25 && temperature <= 35) cropScores.cotton += 30;
+        if (rainfall >= 60 && rainfall <= 120) cropScores.cotton += 25;
+        if (humidity >= 60 && humidity <= 80) cropScores.cotton += 20;
+        if (ph >= 5.8 && ph <= 8.0) cropScores.cotton += 15;
+        if (K >= 50) cropScores.cotton += 10;
+        
+        // Sugarcane scoring - high water, warm climate
+        cropScores.sugarcane = 0;
+        if (temperature >= 24 && temperature <= 32) cropScores.sugarcane += 25;
+        if (rainfall >= 120) cropScores.sugarcane += 30;
+        else if (rainfall >= 80) cropScores.sugarcane += 20;
+        if (humidity >= 70) cropScores.sugarcane += 20;
+        if (ph >= 6.0 && ph <= 7.5) cropScores.sugarcane += 15;
+        if (N >= 100) cropScores.sugarcane += 10;
+        
+        // Chickpea scoring - drought tolerant, cool season
+        cropScores.chickpea = 0;
+        if (temperature >= 18 && temperature <= 28) cropScores.chickpea += 25;
+        if (rainfall >= 30 && rainfall <= 100) cropScores.chickpea += 30;
+        if (humidity >= 40 && humidity <= 65) cropScores.chickpea += 20;
+        if (ph >= 6.2 && ph <= 7.8) cropScores.chickpea += 15;
+        if (P >= 30) cropScores.chickpea += 10;
+        
+        // Kidney beans scoring
+        cropScores.kidney_beans = 0;
+        if (temperature >= 20 && temperature <= 28) cropScores.kidney_beans += 25;
+        if (rainfall >= 80 && rainfall <= 150) cropScores.kidney_beans += 25;
+        if (humidity >= 60 && humidity <= 75) cropScores.kidney_beans += 20;
+        if (ph >= 6.0 && ph <= 7.5) cropScores.kidney_beans += 15;
+        if (P >= 45) cropScores.kidney_beans += 10;
+        if (K >= 45) cropScores.kidney_beans += 5;
+        
+        // Banana scoring - tropical conditions
+        cropScores.banana = 0;
+        if (temperature >= 26 && temperature <= 32) cropScores.banana += 30;
+        if (rainfall >= 100) cropScores.banana += 25;
+        if (humidity >= 75) cropScores.banana += 20;
+        if (ph >= 6.0 && ph <= 7.5) cropScores.banana += 15;
+        if (K >= 60) cropScores.banana += 10;
+        
+        // Find the crop with highest score
+        let bestCrop = 'chickpea';
+        let maxScore = cropScores.chickpea || 0;
+        
+        for (const [crop, score] of Object.entries(cropScores)) {
+            if (score > maxScore) {
+                maxScore = score;
+                bestCrop = crop;
+            }
         }
+        
+        // Calculate confidence based on score
+        const confidence = Math.min(0.95, Math.max(0.60, maxScore / 100));
+        
+        // Calculate yield based on conditions and crop type
+        const yieldMultipliers = {
+            rice: 3500, wheat: 2800, maize: 3200, cotton: 1200,
+            sugarcane: 8000, chickpea: 1800, kidney_beans: 1600, banana: 4000
+        };
+        
+        const baseYield = yieldMultipliers[bestCrop] || 2000;
+        const conditionFactor = Math.min(1.3, Math.max(0.7, maxScore / 80));
+        const predictedYield = Math.round(baseYield * conditionFactor);
+        
+        // Calculate sustainability score
+        let sustainabilityScore = 5.0;
+        if (rainfall < 200) sustainabilityScore += 1.5; // Water conservation
+        if (N < 100) sustainabilityScore += 1.0; // Lower fertilizer use
+        if (ph >= 6.0 && ph <= 7.5) sustainabilityScore += 1.5; // Optimal pH
+        if (bestCrop === 'chickpea' || bestCrop === 'kidney_beans') sustainabilityScore += 1.0; // Nitrogen fixing
+        sustainabilityScore = Math.min(10, sustainabilityScore);
+        
+        // Generate crop-specific recommendations
+        const cropData = this.crops[bestCrop];
+        const recommendations = [];
+        
+        if (cropData) {
+            recommendations.push(`Best season for ${cropData.name_en}: ${cropData.season}`);
+            recommendations.push(`Water requirement: ${cropData.water_requirement}`);
+            recommendations.push(`Expected investment: ₹${cropData.investment_per_ha.toLocaleString()} per hectare`);
+            recommendations.push(`Suitable districts: ${cropData.suitable_districts.join(', ')}`);
+        }
+        
+        // Add condition-specific recommendations
+        if (ph < 6.0) {
+            recommendations.push('Consider adding lime to increase soil pH / मिट्टी का pH बढ़ाने के लिए चूना मिलाएं');
+        } else if (ph > 7.5) {
+            recommendations.push('Consider adding organic matter to reduce soil pH / मिट्टी का pH कम करने के लिए जैविक पदार्थ मिलाएं');
+        }
+        
+        if (N < 40) {
+            recommendations.push('Consider nitrogen-rich fertilizers / नाइट्रोजन युक्त उर्वरक का उपयोग करें');
+        }
+        
+        if (P < 30) {
+            recommendations.push('Add phosphorus fertilizers for better root development / जड़ों के बेहतर विकास के लिए फास्फोरस उर्वरक मिलाएं');
+        }
+        
+        return {
+            crop: bestCrop,
+            predicted_yield_kg_per_ha: predictedYield,
+            sustainability_score: Math.round(sustainabilityScore * 10) / 10,
+            confidence: Math.round(confidence * 1000) / 1000,
+            recommendations: recommendations
+        };
     },
 
     // Generate market prices (simulated for offline)
@@ -325,14 +411,21 @@ const OFFLINE_CROP_DATA = {
         
         Object.keys(this.crops).forEach(cropKey => {
             const crop = this.crops[cropKey];
-            // Simulate small price variations
-            const variation = (Math.random() - 0.5) * 0.1; // ±5% variation
+            // Simulate small price variations (±8%)
+            const variation = (Math.random() - 0.5) * 0.16;
             const currentPrice = crop.current_market_price * (1 + variation);
+            
+            // More realistic trend distribution
+            const trendRandom = Math.random();
+            let trend;
+            if (trendRandom < 0.35) trend = 'up';
+            else if (trendRandom < 0.70) trend = 'stable';
+            else trend = 'down';
             
             prices.push({
                 crop: cropKey,
-                current_price_per_kg: currentPrice,
-                market_trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.3 ? 'stable' : 'down',
+                current_price_per_kg: Math.round(currentPrice * 100) / 100,
+                market_trend: trend,
                 last_updated: currentDate.toISOString()
             });
         });
