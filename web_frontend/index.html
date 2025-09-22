@@ -967,7 +967,7 @@
             // Pre-load data for faster experience
             switch(pageName) {
                 case 'prices':
-                    setTimeout(() => loadMarketPricesOptimizedModal(), 100);
+                    // Market prices will be loaded instantly when modal opens
                     break;
                 case 'investment':
                     setTimeout(() => loadInvestmentAnalysisOptimizedModal(), 100);
@@ -1147,11 +1147,8 @@
                         </div>
                     `;
                     container.appendChild(pageContent);
-                    // Wait for DOM to be ready, then load market prices
-                    setTimeout(() => {
-                        console.log('🔄 Attempting to load market prices...');
-                        loadMarketPricesOptimizedModal();
-                    }, 200);
+                    // Load market prices instantly without any delay
+                    loadMarketPricesInstantly();
                     break;
                     
                 case 'investment':
@@ -2391,6 +2388,83 @@
                 'banana': '🍌'
             };
             return emojiMap[name] || '🌾';
+        }
+
+        // Instant market prices loading function
+        function loadMarketPricesInstantly() {
+            console.log('🚀 Loading market prices instantly...');
+            const content = document.getElementById('modal-prices-content');
+            
+            if (!content) {
+                console.error('❌ modal-prices-content element not found');
+                return;
+            }
+            
+            // Get market prices data immediately
+            const marketData = OFFLINE_CROP_DATA.getMarketPrices();
+            
+            if (!marketData || !marketData.prices || marketData.prices.length === 0) {
+                content.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #f44336;">
+                        <h3>❌ Market Data Not Available</h3>
+                        <p>Market prices data is not loaded. Please check the connection.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            content.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    ${marketData.prices.map(price => {
+                        const cropEmoji = cropEmojis[price.crop] || '🌱';
+                        const cropNameEng = cropNamesEnglish[price.crop] || price.crop;
+                        const cropNameHin = cropNamesHindi[price.crop] || price.crop;
+                        
+                        const trendIcon = price.market_trend === 'up' ? '📈' : 
+                                        price.market_trend === 'down' ? '📉' : '➡️';
+                        const trendText = price.market_trend === 'up' ? 'Rising Market' : 
+                                        price.market_trend === 'down' ? 'Falling Market' : 'Stable Market';
+                        const trendColor = price.market_trend === 'up' ? '#4CAF50' : 
+                                         price.market_trend === 'down' ? '#f44336' : '#FF9800';
+                        
+                        return `
+                            <div style="background: linear-gradient(135deg, #E8F5E8, #F1F8E9); padding: 20px; border-radius: 12px; border-left: 5px solid #4CAF50; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                    <span style="font-size: 2rem; margin-right: 10px;">${cropEmoji}</span>
+                                    <div>
+                                        <h4 style="color: #2E7D32; margin: 0; font-size: 1.2rem;">${cropNameEng}</h4>
+                                        <p style="color: #666; margin: 0; font-size: 0.9rem; font-style: italic;">${cropNameHin}</p>
+                                    </div>
+                                </div>
+                                <div style="text-align: center; margin-bottom: 15px;">
+                                    <div style="font-size: 2rem; font-weight: bold; color: #1976D2; margin-bottom: 5px;">₹${price.current_price_per_kg.toFixed(2)}/kg</div>
+                                    <div style="font-size: 0.9rem; color: ${trendColor}; background: white; padding: 8px; border-radius: 6px; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                                        <span>${trendIcon}</span>
+                                        <span>${trendText}</span>
+                                    </div>
+                                </div>
+                                <div style="background: rgba(76, 175, 80, 0.1); padding: 10px; border-radius: 6px; text-align: center;">
+                                    <span style="font-size: 0.8rem; color: #2E7D32; font-weight: bold;">
+                                        📊 Market Status: ${price.market_trend === 'up' ? 'Strong' : price.market_trend === 'down' ? 'Weak' : 'Stable'}
+                                    </span>
+                                </div>
+                                <div style="text-align: center; margin-top: 10px; font-size: 0.8rem; color: #999;">
+                                    Updated: ${new Date(price.last_updated).toLocaleDateString()}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                <div style="margin-top: 25px; padding: 20px; background: #E3F2FD; border-radius: 10px; text-align: center;">
+                    <p style="color: #1976D2; font-size: 1rem; margin: 0; font-weight: bold;">
+                        📊 Prices updated daily from major markets / कीमतें प्रमुख बाजारों से दैनिक अपडेट होती हैं
+                    </p>
+                    <p style="color: #666; font-size: 0.9rem; margin: 5px 0 0 0; font-style: italic;">
+                        Data sourced from Jharkhand agricultural markets / झारखंड कृषि बाजारों से डेटा प्राप्त
+                    </p>
+                </div>
+            `;
+            console.log('✅ Market prices loaded instantly');
         }
 
         // Optimized modal functions for the navigation

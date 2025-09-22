@@ -130,36 +130,45 @@ class CropRecommendationSystem:
     
     def visualize_data_distribution(self):
         """Visualize the data distribution"""
-        plt.figure(figsize=(15, 10))
-        
-        # Plot 1: Crop distribution
-        plt.subplot(2, 3, 1)
-        self.df['label'].value_counts().plot(kind='bar', rot=45)
-        plt.title('Distribution of Crops')
-        plt.xlabel('Crops')
-        plt.ylabel('Count')
-        
-        # Plot 2-4: Feature distributions
-        numerical_features = ['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall']
-        for i, feature in enumerate(numerical_features[:6], 2):
-            plt.subplot(2, 3, i)
-            plt.hist(self.df[feature], bins=30, alpha=0.7)
-            plt.title(f'Distribution of {feature}')
-            plt.xlabel(feature)
-            plt.ylabel('Frequency')
-        
-        plt.tight_layout()
-        plt.savefig('data_distribution.png', dpi=300, bbox_inches='tight')
-        plt.show()
-        
-        # Correlation heatmap
-        plt.figure(figsize=(10, 8))
-        correlation_matrix = self.df[numerical_features].corr()
-        sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', center=0)
-        plt.title('Feature Correlation Heatmap')
-        plt.tight_layout()
-        plt.savefig('correlation_heatmap.png', dpi=300, bbox_inches='tight')
-        plt.show()
+        try:
+            # Use non-interactive backend for headless environments
+            plt.switch_backend('Agg')
+            
+            plt.figure(figsize=(15, 10))
+            
+            # Plot 1: Crop distribution
+            plt.subplot(2, 3, 1)
+            self.df['label'].value_counts().plot(kind='bar', rot=45)
+            plt.title('Distribution of Crops')
+            plt.xlabel('Crops')
+            plt.ylabel('Count')
+            
+            # Plot 2-6: Feature distributions (limit to 5 features to fit in 2x3 grid)
+            numerical_features = ['N', 'P', 'K', 'temperature', 'humidity']
+            for i, feature in enumerate(numerical_features, 2):
+                plt.subplot(2, 3, i)
+                plt.hist(self.df[feature], bins=30, alpha=0.7)
+                plt.title(f'Distribution of {feature}')
+                plt.xlabel(feature)
+                plt.ylabel('Frequency')
+            
+            plt.tight_layout()
+            plt.savefig('data_distribution.png', dpi=300, bbox_inches='tight')
+            print("Data distribution plot saved as 'data_distribution.png'")
+            
+            # Correlation heatmap
+            plt.figure(figsize=(10, 8))
+            numerical_features_all = ['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall']
+            correlation_matrix = self.df[numerical_features_all].corr()
+            sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', center=0)
+            plt.title('Feature Correlation Heatmap')
+            plt.tight_layout()
+            plt.savefig('correlation_heatmap.png', dpi=300, bbox_inches='tight')
+            print("Correlation heatmap saved as 'correlation_heatmap.png'")
+            
+        except Exception as e:
+            print(f"Visualization skipped due to display issues: {e}")
+            print("Continuing with model training...")
     
     def train_and_evaluate_models(self):
         """
@@ -169,11 +178,33 @@ class CropRecommendationSystem:
         print("STEP 2: MODEL BUILDING AND EVALUATION")
         print("="*60)
         
-        # Initialize models
+        # Initialize models with better parameters for crop recommendation
         models = {
-            'Random Forest': RandomForestClassifier(random_state=42),
-            'XGBoost': xgb.XGBClassifier(random_state=42, eval_metric='mlogloss'),
-            'SVM': SVC(random_state=42),
+            'Random Forest': RandomForestClassifier(
+                n_estimators=100,
+                max_depth=15,
+                min_samples_split=5,
+                min_samples_leaf=2,
+                random_state=42,
+                n_jobs=-1
+            ),
+            'XGBoost': xgb.XGBClassifier(
+                n_estimators=100,
+                max_depth=6,
+                learning_rate=0.1,
+                subsample=0.8,
+                colsample_bytree=0.8,
+                random_state=42,
+                eval_metric='mlogloss',
+                n_jobs=-1
+            ),
+            'SVM': SVC(
+                C=10,
+                kernel='rbf',
+                gamma='scale',
+                random_state=42,
+                probability=True  # Enable probability estimates
+            ),
             'Gaussian Naive Bayes': GaussianNB()
         }
         
@@ -199,15 +230,19 @@ class CropRecommendationSystem:
             print(classification_report(self.y_test, y_pred))
             
             # Confusion matrix
-            cm = confusion_matrix(self.y_test, y_pred)
-            plt.figure(figsize=(10, 8))
-            sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
-            plt.title(f'Confusion Matrix - {name}')
-            plt.xlabel('Predicted')
-            plt.ylabel('Actual')
-            plt.tight_layout()
-            plt.savefig(f'confusion_matrix_{name.replace(" ", "_").lower()}.png', dpi=300, bbox_inches='tight')
-            plt.show()
+            try:
+                cm = confusion_matrix(self.y_test, y_pred)
+                plt.figure(figsize=(10, 8))
+                sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+                plt.title(f'Confusion Matrix - {name}')
+                plt.xlabel('Predicted')
+                plt.ylabel('Actual')
+                plt.tight_layout()
+                plt.savefig(f'confusion_matrix_{name.replace(" ", "_").lower()}.png', dpi=300, bbox_inches='tight')
+                print(f"Confusion matrix saved for {name}")
+                plt.close()  # Close the figure to free memory
+            except Exception as e:
+                print(f"Confusion matrix visualization skipped for {name}: {e}")
             
             # Store the model
             self.models[name] = model
@@ -296,9 +331,18 @@ class CropRecommendationSystem:
         print(f"Final optimized model accuracy: {final_accuracy:.4f}")
         
         # Save the model
-        model_filename = 'best_crop_recommendation_model.pkl'
+        model_filename = 'crop_recommendation_model.pkl'
         joblib.dump(self.best_model, model_filename)
         print(f"Model saved as {model_filename}")
+        
+        # Also save to backend directory for API use
+        try:
+            import shutil
+            backend_model_path = '../backend/crop_recommendation_model.pkl'
+            shutil.copy(model_filename, backend_model_path)
+            print(f"Model also copied to backend directory: {backend_model_path}")
+        except Exception as e:
+            print(f"Could not copy to backend directory: {e}")
         
         return self.best_model, final_accuracy
     
@@ -310,7 +354,7 @@ class CropRecommendationSystem:
         print("STEP 4: BUILD A PREDICTION FUNCTION")
         print("="*60)
         
-        def recommend_crop(N, P, K, temperature, humidity, ph, rainfall, model_path='best_crop_recommendation_model.pkl'):
+        def recommend_crop(N, P, K, temperature, humidity, ph, rainfall, model_path='crop_recommendation_model.pkl'):
             """
             Recommend crop based on soil and climate conditions
             
@@ -360,7 +404,7 @@ class CropRecommendationSystem:
         print("STEP 5: EXPAND FOR YIELD AND SUSTAINABILITY")
         print("="*60)
         
-        def recommend_crop_enhanced(N, P, K, temperature, humidity, ph, rainfall, model_path='best_crop_recommendation_model.pkl'):
+        def recommend_crop_enhanced(N, P, K, temperature, humidity, ph, rainfall, model_path='crop_recommendation_model.pkl'):
             """
             Enhanced crop recommendation with yield prediction and sustainability score
             

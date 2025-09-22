@@ -31,11 +31,20 @@ app.add_middleware(
 
 # Load the trained model
 try:
-    with open('../ml_model/crop_recommendation_model.pkl', 'rb') as f:
-        model = pickle.load(f)
-    print("Model loaded successfully!")
+    import joblib
+    model = joblib.load('crop_recommendation_model.pkl')
+    print("✅ Trained model loaded successfully!")
+    print(f"Model type: {type(model).__name__}")
 except FileNotFoundError:
-    print("Model file not found. Please train the model first.")
+    try:
+        model = joblib.load('../ml_model/crop_recommendation_model.pkl')
+        print("✅ Model loaded from ml_model directory!")
+    except FileNotFoundError:
+        print("❌ Model file not found. Please train the model first by running:")
+        print("   cd ml_model && python train_model_simple.py")
+        model = None
+except Exception as e:
+    print(f"❌ Error loading model: {e}")
     model = None
 
 # Pydantic models for request/response
@@ -176,7 +185,9 @@ async def recommend_crop(request: CropRecommendationRequest):
         try:
             probabilities = model.predict_proba(input_data)[0]
             confidence = float(np.max(probabilities))
-        except:
+            print(f"🎯 Predicted crop: {crop_prediction} (confidence: {confidence:.3f})")
+        except Exception as e:
+            print(f"⚠️ Could not get probabilities: {e}")
             confidence = 0.85  # Default confidence
         
         # Calculate yield
